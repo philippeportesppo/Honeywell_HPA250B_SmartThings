@@ -1,5 +1,5 @@
 /**
- *  Honeywell_HPA250B
+ *  Honeywell_HFP205B
  *
  *  Copyright 2017 Philippe PORTES
  *
@@ -46,19 +46,19 @@ preferences {
 tiles (scale: 2) {
       
 standardTile("fan", "device.fan", width: 6, height: 4, canChangeIcon: false, canChangeBackground: false, decoration: "flat") {
-    state ("fan_off", label:'Off' /*, action:"fan_germ"*/, icon:"st.Lighting.light24", backgroundColor:"#ffffff")
-    state ("fan_germ", label:'Germ', action:"fan_general",  icon:"st.Lighting.light24", backgroundColor:"#00a0dc")
-    state ("fan_general_on", label:'General Clean', action:"fan_allergen", icon:"st.Lighting.light24", backgroundColor:"#00a0dc")
-    state ("fan_allergen", label:'Allergen', action:"fan_turbo", icon:"st.Lighting.light24", backgroundColor:"#00a0dc")
-    state ("fan_turbo", label:'Turbo', action:"fan_germ",  icon:"st.Lighting.light24", backgroundColor:"#00a0dc")
+    state ("fan_off", label:'Off' /*, action:"fan_germ"*/, icon:"https://raw.githubusercontent.com/philippeportesppo/Honeywell_HPA250B_SmartThings/master/images/HPA250.png", backgroundColor:"#ffffff")
+    state ("fan_germ", label:'Germ', action:"fan_general",  icon:"https://raw.githubusercontent.com/philippeportesppo/Honeywell_HPA250B_SmartThings/master/images/HPA250.png", backgroundColor:"#00a0dc")
+    state ("fan_general_on", label:'General Clean', action:"fan_allergen", icon:"https://raw.githubusercontent.com/philippeportesppo/Honeywell_HPA250B_SmartThings/master/images/HPA250.png", backgroundColor:"#00a0dc")
+    state ("fan_allergen", label:'Allergen', action:"fan_turbo", icon:"https://raw.githubusercontent.com/philippeportesppo/Honeywell_HPA250B_SmartThings/master/images/HPA250.png", backgroundColor:"#00a0dc")
+    state ("fan_turbo", label:'Turbo', action:"fan_germ",  icon:"https://raw.githubusercontent.com/philippeportesppo/Honeywell_HPA250B_SmartThings/master/images/HPA250.png", backgroundColor:"#00a0dc")
     state ("fan_updating", label:'Sending...', backgroundColor:"#00a0dc")
     state ("fan_auto", label:'Auto(VOC)',icon:"https://raw.githubusercontent.com/philippeportesppo/AirMentorPro2_SmartThings/master/images/TVOC-Icon.png", backgroundColor:"#00a0dc")
  
 }
 
 standardTile("fanonoff", "device.fanonoff", width: 2, height: 2, canChangeIcon: false, canChangeBackground: false, decoration: "flat") {
-    state ("fan_off", label:'Off', action:"fan_germ", icon:"st.Home.home30", backgroundColor:"#ffffff")
-    state ("fan_on", label:'On', action:"fan_off", icon:"st.Home.home30", backgroundColor:"#00a0dc")
+    state ("fan_off", label:'Off', action:"fan_germ", icon:"https://raw.githubusercontent.com/philippeportesppo/Honeywell_HPA250B_SmartThings/master/images/HPA250.png", backgroundColor:"#ffffff")
+    state ("fan_on", label:'On', action:"fan_off", icon:"https://raw.githubusercontent.com/philippeportesppo/Honeywell_HPA250B_SmartThings/master/images/HPA250.png", backgroundColor:"#00a0dc")
     state ("fan_updating", label:'Sending...', backgroundColor:"#00a0dc")
 }
 
