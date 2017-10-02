@@ -18,7 +18,8 @@ Integration of Honeywell HPA250B into smartthings using Raspberry Pi and BluePi
 
 <p>Command line for py script on Raspberry Pi: <b>sudo python hpa250b_agent.py [mac address] [port] "`ifconfig wlan0 | grep "inet " | awk -F'[: ]+' '{ print $4 }'`" &</b>
 </p>
-
+<p> Example: sudo python hpa250b_agent.py fe:ed:fa:ce:da:ad 12345 "`ifconfig wlan0 | grep "inet " | awk -F'[: ]+' '{ print $4 }'`" &
+</p>
 <p><b>Configuration SmartThings:</b></p>
 <p>Configure the Raspberry IP address with the static IP you defined</p>
 <p>Configure the Raspberry Port with the port (12345) you defined</p>
