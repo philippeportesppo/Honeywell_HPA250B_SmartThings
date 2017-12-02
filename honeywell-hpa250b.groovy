@@ -1,5 +1,5 @@
 /**
- *  Honeywell_HFP205B
+ *  Honeywell_HFP250B
  *
  *  Copyright 2017 Philippe PORTES
  *
@@ -21,6 +21,7 @@ definition (name: "Honeywell_HPA250B", namespace: "philippeportesppo", author: "
 	capability "actuator"
     capability "Sensor"
     capability "polling"
+    capability "switch"
     command "fan_germ"
     command "fan_general"
     command "fan_allergen"
@@ -94,7 +95,21 @@ standardTile("voc", "device.voc", width: 2, height: 2, canChangeIcon: false, can
 }
 
 }
-  
+
+def on()
+{
+	log.debug "on"
+
+	fan_germ()
+}
+
+def off()
+{
+	log.debug "off"
+
+	fan_off()
+}
+
 def timer_minus()
 {
 	log.debug "timer_minus"
