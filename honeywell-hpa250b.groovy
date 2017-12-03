@@ -57,9 +57,9 @@ standardTile("fan", "device.fan", width: 6, height: 4, canChangeIcon: false, can
  
 }
 
-standardTile("fanonoff", "device.fanonoff", width: 2, height: 2, canChangeIcon: false, canChangeBackground: false, decoration: "flat") {
-    state ("fan_off", label:'Off', action:"fan_germ", icon:"https://raw.githubusercontent.com/philippeportesppo/Honeywell_HPA250B_SmartThings/master/images/HPA250.png", backgroundColor:"#ffffff")
-    state ("fan_on", label:'On', action:"fan_off", icon:"https://raw.githubusercontent.com/philippeportesppo/Honeywell_HPA250B_SmartThings/master/images/HPA250.png", backgroundColor:"#00a0dc")
+standardTile("switch", "device.switch", width: 2, height: 2, canChangeIcon: false, canChangeBackground: false, decoration: "flat") {
+    state ("off", label:'Off', action:"switch.on", icon:"https://raw.githubusercontent.com/philippeportesppo/Honeywell_HPA250B_SmartThings/master/images/HPA250.png", backgroundColor:"#ffffff")
+    state ("on", label:'On', action:"switch.off", icon:"https://raw.githubusercontent.com/philippeportesppo/Honeywell_HPA250B_SmartThings/master/images/HPA250.png", backgroundColor:"#00a0dc")
     state ("fan_updating", label:'Sending...', backgroundColor:"#00a0dc")
 }
 
@@ -90,7 +90,7 @@ standardTile("voc", "device.voc", width: 2, height: 2, canChangeIcon: false, can
     state ("off", label:'')
 }
     main("fan")
-    details(["fan","fanonoff","light","voc","timer_minus","timer","timer_plus"])
+    details(["fan","switch","light","voc","timer_minus","timer","timer_plus"])
     
 }
 
@@ -142,7 +142,7 @@ def voc_off()
 def voc_on()
 {
 	log.debug "voc_on"
-	sendEvent(name: "fanonoff", value: "fan_on")
+	sendEvent(name: "fanonoff", value: "on")
 	sendEvent(name: "voc",      value: "voc_updating" )
 	sendEvent(name: "argument", value: 'on', display: true)
     sendEvent(name: "command", value: 'voc', display: true)
@@ -186,7 +186,7 @@ def fan_germ()
 {
 	log.debug "fan_germ"
 
-	sendEvent(name: "fanonoff", value: "fan_on")
+	sendEvent(name: "switch", value: "on")
 
 	sendEvent(name: "fan",      value: "fan_updating" )
 	sendEvent(name: "argument", value: 'germ', display: true)
@@ -199,7 +199,7 @@ def fan_general()
 {
 	log.debug "fan_general"
 
-	sendEvent(name: "fanonoff", value: "fan_on")
+	sendEvent(name: "switch", value: "on")
 
 	sendEvent(name: "fan",      value: "fan_updating" )
 	sendEvent(name: "argument", value: 'general_on', display: true)
@@ -212,7 +212,7 @@ def fan_allergen()
 {
 	log.debug "fan_allergen"
 
-	sendEvent(name: "fanonoff", value: "fan_on")
+	sendEvent(name: "switch", value: "on")
 
 	sendEvent(name: "fan",      value: "fan_updating" )
 	sendEvent(name: "argument", value: 'allergen', display: true)
@@ -225,7 +225,7 @@ def fan_turbo()
 {
 	log.debug "fan_turbo"
 
-	sendEvent(name: "fanonoff", value: "fan_on")
+	sendEvent(name: "switch", value: "on")
 
 	sendEvent(name: "fan",      value: "fan_updating" )
 	sendEvent(name: "argument", value: 'turbo', display: true)
@@ -238,7 +238,7 @@ def fan_off()
 {
 	log.debug "fan_off"
 
-	sendEvent(name: "fanonoff", value: "fan_off")
+	sendEvent(name: "switch", value: "off")
 
 	sendEvent(name: "fan",      value: "fan_updating" )
 	sendEvent(name: "argument", value: 'off', display: true)
