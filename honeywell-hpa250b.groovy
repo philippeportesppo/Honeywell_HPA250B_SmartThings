@@ -264,7 +264,6 @@ def installed() {
 }
 
 def updated() {
-    
 	log.debug "Executing 'updated'"
 }
 
@@ -299,6 +298,8 @@ def parse(description) {
     if (result.hpa250b.fanSpeed == "off") {
     	events << createEvent(name: "light",    value: "off", isStateChanged:true)  
         events << createEvent(name: "voc", 	    value: "off", isStateChanged:true)
+        events << createEvent(name: "switch", 	value: "off", isStateChanged:true)
+        
         }
 
     else
