@@ -7,7 +7,7 @@ Integration of Honeywell HPA250B into smartthings using Raspberry Pi and BluePi
 <li> Raspberry Pi 3 rev 2 </li>
 </p>
 <p></p>
-<p>
+<p></p>
 <h2>Raspberry configuration:<p></p>
 <p>
 <li>Bluez (http://www.elinux.org/RPi_Bluetooth_LE)</li>
