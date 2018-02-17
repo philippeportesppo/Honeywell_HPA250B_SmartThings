@@ -21,6 +21,7 @@ import binascii
 import socket
 import re
 import netifaces as ni
+from time import sleep
 from bluepy.btle import Scanner, DefaultDelegate, Peripheral, UUID, BTLEException
 
 def speedfan(x):
@@ -55,6 +56,14 @@ class HFPStatus():
         self.light='off'
         self.timer=0
         self.vociaq="green"
+        self.prefilter=100
+        self.epafilter=100
+
+    def setPreFilter(self, prefilter):
+        self.prefilter=prefilter
+
+    def setEPAFilter(self, epafilter):
+        self.epafilter=epafilter
 
     def setVoc(self, voc):
         self.voc=voc
@@ -75,7 +84,7 @@ class HFPStatus():
         self.timer=timer
 
     def status(self):
-        return '{"hpa250b": {"fanSpeed":"'+self.fanSpeed+'","voc":"'+self.voc+'","vociaq":"'+self.vociaq+'","light":"'+self.light+'","timer":"'+str(self.timer)+'"}}'
+        return '{"hpa250b": {"fanSpeed":"'+self.fanSpeed+'","prefilter":"'+str(self.prefilter)+'","epafilter":"'+str(self.epafilter)+'","voc":"'+self.voc+'","vociaq":"'+self.vociaq+'","light":"'+self.light+'","timer":"'+str(self.timer)+'"}}'
 
 class HFPProDelegate(DefaultDelegate):
     def __init__(self, bluetooth_adr,state,status):
@@ -86,6 +95,8 @@ class HFPProDelegate(DefaultDelegate):
         self.voc='off'
         self.light='off'
         self.timer=0
+        self.prefilter=100
+        self.epafilter=100
 
         print "Delegate initialized"
         DefaultDelegate.__init__(self)
@@ -114,8 +125,16 @@ class HFPProDelegate(DefaultDelegate):
                 self.status.setLight(light(int(binascii.hexlify(data[2]),16)&0x03))
 
                 self.status.setTimer(int(binascii.hexlify(data[4]),16))
+                #print "Prefilter ="+str(binascii.hexlify(data[5]))
+                if data[5] != '\x00':
+                    self.status.setPreFilter(int(binascii.hexlify(data[5]),16))
+
+                #print "EPAfilter ="+str(binascii.hexlify(data[6]))
+                if data[6] != '\x00':
+                    self.status.setEPAFilter(int(binascii.hexlify(data[6]),16))
             except:
                 print "Unkown notification parameter"
+
             print self.status.status()
 
 def sendBtCmd(perif, statushandler, string):
@@ -204,11 +223,13 @@ def main():
     try:
         s.bind((host, port))            # Bind to the port
     except:
-        print "socket already bond"
-        s.close()
-        s = None
-        s.bind((host, port))
-
+        while True:
+            sleep(10)
+            try:
+               s.bind((host, port))
+               break
+            except:
+                continue
     if s!=None:
 
         while True:
