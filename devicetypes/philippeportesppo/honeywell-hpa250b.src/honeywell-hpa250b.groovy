@@ -1,7 +1,7 @@
 /**
- *  Honeywell_HFP250B
+ *  Honeywell_HPA250B
  *
- *  Copyright 2017 Philippe PORTES
+ *  Copyright 2018 Philippe PORTES
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  *  in compliance with the License. You may obtain a copy of the License at:
@@ -18,7 +18,7 @@ import groovy.json.JsonSlurper
 metadata {
 definition (name: "Honeywell_HPA250B", namespace: "philippeportesppo", author: "Philippe PORTES") 
 {
-	capability "actuator"
+    capability "actuator"
     capability "Sensor"
     capability "polling"
     capability "switch"
@@ -39,8 +39,8 @@ definition (name: "Honeywell_HPA250B", namespace: "philippeportesppo", author: "
 }
 preferences {
         section {
-            input "internal_ip", "text", title: "Raspberry static IP", required: true
-            input "internal_port", "text", title: "Raspberry port (12345)", required: true
+            // input "internal_ip", "text", title: "Raspberry static IP", required: true
+            // input "internal_port", "text", title: "Raspberry port (12345)", required: true
             }		
         }
     
@@ -72,7 +72,7 @@ standardTile("timer", "device.timer", width: 2, height: 2, canChangeIcon: false,
 standardTile("timer_plus", "device.timer_plus", width: 2, height: 2, canChangeIcon: false, canChangeBackground: false, decoration: "flat") {
     state ("default", label:'+', action:"timer_plus", backgroundColor:"#ffffff")
 }
-standardTile("light", "device.light", width: 2, height: 2, canChangeIcon: false, canChangeBackground: false,decoration: "flat",) {
+standardTile("light", "device.light", width: 2, height: 2, canChangeIcon: false, canChangeBackground: false,decoration: "flat") {
     state ("light_off", label:'Off', action:"light_on", icon:"st.Lighting.light13", backgroundColor:"#ffffff" )
     state ("light_medium", label:'Medium', action:"light_off",  icon:"st.Lighting.light11", backgroundColor:"#00a0dc")
     state ("light_on", label:'On', action:"light_medium", icon:"st.Lighting.light11", backgroundColor:"#00a0dc")
@@ -80,7 +80,7 @@ standardTile("light", "device.light", width: 2, height: 2, canChangeIcon: false,
     state ("off", label:'')
 
 }
-standardTile("voc", "device.voc", width: 2, height: 2, canChangeIcon: false, canChangeBackground: false, decoration: "flat",) {
+standardTile("voc", "device.voc", width: 2, height: 2, canChangeIcon: false, canChangeBackground: false, decoration: "flat") {
     state ("voc_off", label:'Off', action:"voc_off", icon:"https://raw.githubusercontent.com/philippeportesppo/AirMentorPro2_SmartThings/master/images/TVOC-Icon.png", backgroundColor:"#ffffff")
     state ("voc_on_green", label:'On', action:"voc_on", icon:"https://raw.githubusercontent.com/philippeportesppo/AirMentorPro2_SmartThings/master/images/TVOC-Icon.png", backgroundColor:"#44b621")
     state ("voc_on_orange", label:'On', action:"voc_on", icon:"https://raw.githubusercontent.com/philippeportesppo/AirMentorPro2_SmartThings/master/images/TVOC-Icon.png", backgroundColor:"#d04e00")
@@ -89,8 +89,14 @@ standardTile("voc", "device.voc", width: 2, height: 2, canChangeIcon: false, can
     state ("voc_updating", label:'Sending...')
     state ("off", label:'')
 }
+standardTile("prefilter", "device.prefilter", width: 2, height: 2, canChangeIcon: false, canChangeBackground: false, decoration: "flat") {
+	state ("default", label: 'Pre-Filter: ${currentValue}%', backgroundColor:"#ffffff")
+}
+standardTile("epafilter", "device.epafilter", width: 2, height: 2, canChangeIcon: false, canChangeBackground: false, decoration: "flat") {
+	state ("default", label: 'EPA Filter: ${currentValue}%', backgroundColor:"#ffffff")
+}
     main("fan")
-    details(["fan","switch","light","voc","timer_minus","timer","timer_plus"])
+    details(["fan","switch","light","voc","timer_minus","timer","timer_plus", "prefilter","epafilter" ])
     
 }
 
@@ -260,7 +266,12 @@ def refresh_status()
 
 def installed() {
 	log.debug "Executing 'installed'"
+    log.debug getDataValue("ip")
+    log.debug getDataValue("port")
     
+    refresh_status()
+
+
 }
 
 def updated() {
@@ -298,7 +309,7 @@ def parse(description) {
     if (result.hpa250b.fanSpeed == "off") {
     	events << createEvent(name: "light",    value: "off", isStateChanged:true)  
         events << createEvent(name: "voc", 	    value: "off", isStateChanged:true)
-        events << createEvent(name: "switch", 	value: "off", isStateChanged:true)
+        events << createEvent(name: "switch", 	value: "off", isStateChanged:true) //PPO
         
         }
 
@@ -307,7 +318,9 @@ def parse(description) {
     	events << createEvent(name: "light",     	value: "light_${result.hpa250b.light}", isStateChanged:true)   
         events << createEvent(name: "voc",     		value: "voc_${result.hpa250b.voc}_${result.hpa250b.vociaq}", isStateChanged:true)
         }
-    events << createEvent(name: "timer",     	value: "${result.hpa250b.timer}", isStateChanged:true)   
+    events << createEvent(name: "timer",     		value: "${result.hpa250b.timer}", isStateChanged:true)   
+    events << createEvent(name: "prefilter",     	value: "${result.hpa250b.prefilter}", isStateChanged:true)   
+    events << createEvent(name: "epafilter",     	value: "${result.hpa250b.epafilter}", isStateChanged:true)   
 
     return events
 }
@@ -337,13 +350,15 @@ private String convertPortToHex(port) {
 def refreshCmd() {
 	log.debug "Executing refreshCmd"
 	
-    def host = internal_ip 
-    def port = internal_port
+    def host = getDataValue("ip")//internal_ip 
+
+    def port = getDataValue("port")//internal_port
+  
+    log.debug "The device id configured is: $device.deviceNetworkId"
     def levelCommand = 0x00
-    def hosthex = convertIPtoHex(host)
-    def porthex = convertPortToHex(port)
+
     log.debug "The device id before update is: $device.deviceNetworkId"
-    device.deviceNetworkId = "$hosthex:$porthex" 
+    device.deviceNetworkId = "$host:$port" 
     
     log.debug "The device id configured is: $device.deviceNetworkId"
     def command = device.currentValue("command")
