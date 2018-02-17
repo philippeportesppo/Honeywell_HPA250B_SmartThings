@@ -119,7 +119,7 @@ http_server = UPNPHTTPServer(8090,
 
                              manufacturer_url='https://www.honeywellpluggedin.com',
 
-                             model_description='Honeywell Bluetooth® Smart True HEPA Allergen Remover',
+                             model_description='Honeywell Bluetooth Smart True HEPA Allergen Remover',
 
                              model_name="HPA250B",
 
@@ -143,9 +143,9 @@ print "SSDP started"
 
 ssdp.register('local',
 
-              'uuid:{}::urn:schemas-upnp-org:device:Hpa250b:1'.format(device_uuid),
+              'uuid:{}::urn:schemas-upnp-org:device:hpa250b:1'.format(device_uuid),
 
-              'urn:schemas-upnp-org:device:pha250b:1',
+              'urn:schemas-upnp-org:device:hpa250b:1',
 
               'http://{}:8090/hpa250b.xml'.format(local_ip_address))
 
