@@ -21,7 +21,7 @@ definition(
 		category: "SmartThings Labs",
 		iconUrl: "https://raw.githubusercontent.com/philippeportesppo/Honeywell_HPA250B_SmartThings/master/images/HPA250.png",
 		iconX2Url: "https://raw.githubusercontent.com/philippeportesppo/Honeywell_HPA250B_SmartThings/master/images/HPA250.png",
-		iconX3Url: "https://raw.githubusercontent.com/philippeportesppo/Honeywell_HPA250B_SmartThings/master/images/HPA250.png")
+		iconX3Url: "https://raw.githubusercontent.com/philippeportesppo/Honeywell_HPA250B_SmartThings/master/images/HPA250.png" )
 
 
 preferences {
