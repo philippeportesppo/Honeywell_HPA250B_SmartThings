@@ -1,4 +1,3 @@
-# Honeywell_HPA250B_SmartThings
 Integration of Honeywell HPA250B into smartthings using Raspberry Pi and BluePi
 
 <h2>Hardware needed:</h2>
@@ -21,7 +20,7 @@ Integration of Honeywell HPA250B into smartthings using Raspberry Pi and BluePi
 </p>
 <p> Example: sudo python hpa250b_agent.py fe:ed:fa:ce:da:ad 12345 wlan0 1 &
 </p>
-<li>SSDP UPnP Server: python ssdp_server_hpa250b.py &</li>
+<li>SSDP UPnP Server: <b>python ssdp_server_hpa250b.py &</b></li>
 <h2>Configuration SmartThings:</h2>
 <p>Install the Honeywell HPA250B UPnP Service Manager from the app Smartapps -> myApps after you published it for yourself</p>
 <p>Search for the Raspberry, select it, save. The Device will be created automatically.</p>
