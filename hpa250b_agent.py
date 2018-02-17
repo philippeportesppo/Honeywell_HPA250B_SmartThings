@@ -20,6 +20,7 @@ import struct
 import binascii
 import socket
 import re
+from time import sleep
 from bluepy.btle import Scanner, DefaultDelegate, Peripheral, UUID, BTLEException
 
 def speedfan(x):
@@ -54,6 +55,14 @@ class HFPStatus():
         self.light='off'
         self.timer=0
         self.vociaq="green"
+        self.prefilter=100
+        self.epafilter=100
+
+    def setPreFilter(self, prefilter):
+        self.prefilter=prefilter
+
+    def setEPAFilter(self, epafilter):
+        self.epafilter=epafilter
 
     def setVoc(self, voc):
         self.voc=voc
@@ -74,7 +83,7 @@ class HFPStatus():
         self.timer=timer
 
     def status(self):
-        return '{"hpa250b": {"fanSpeed":"'+self.fanSpeed+'","voc":"'+self.voc+'","vociaq":"'+self.vociaq+'","light":"'+self.light+'","timer":"'+str(self.timer)+'"}}'
+        return '{"hpa250b": {"fanSpeed":"'+self.fanSpeed+'","prefilter":"'+str(self.prefilter)+'","epafilter":"'+str(self.epafilter)+'","voc":"'+self.voc+'","vociaq":"'+self.vociaq+'","light":"'+self.light+'","timer":"'+str(self.timer)+'"}}'
 
 class HFPProDelegate(DefaultDelegate):
     def __init__(self, bluetooth_adr,state,status):
@@ -85,6 +94,8 @@ class HFPProDelegate(DefaultDelegate):
         self.voc='off'
         self.light='off'
         self.timer=0
+        self.prefilter=100
+        self.epafilter=100
 
         print "Delegate initialized"
         DefaultDelegate.__init__(self)
@@ -111,14 +122,22 @@ class HFPProDelegate(DefaultDelegate):
                     self.status.setVoc('off')
                 # print "light value: ", int(binascii.hexlify(data[2]),16) & 0x03
                 self.status.setLight(light(int(binascii.hexlify(data[2]),16)&0x03))
-        
+
                 self.status.setTimer(int(binascii.hexlify(data[4]),16))
+                #print "Prefilter ="+str(binascii.hexlify(data[5]))
+                if data[5] != '\x00':
+                    self.status.setPreFilter(int(binascii.hexlify(data[5]),16))
+
+                #print "EPAfilter ="+str(binascii.hexlify(data[6]))
+                if data[6] != '\x00':
+                    self.status.setEPAFilter(int(binascii.hexlify(data[6]),16))
             except:
                 print "Unkown notification parameter"
+
             print self.status.status()
 
 def sendBtCmd(perif, statushandler, string):
- 
+
     print "Sending command:"+string
     perif.writeCharacteristic(0x25,string, withResponse=True)
     while True:
@@ -163,11 +182,13 @@ def main():
     try:
         s.bind((host, port))            # Bind to the port
     except:
-        print "socket already bond"
-        s.close()
-        s = None
-        s.bind((host, port))
-        
+        while True:
+            sleep(10)
+            try:
+               s.bind((host, port))
+               break
+            except:
+                continue
     if s!=None:
 
         while True:
@@ -176,7 +197,7 @@ def main():
                 conn = None
                 command= None
                 s.listen(5)
-                
+
                 try:
                     conn, addr = s.accept()     # Establish connection with client.
                     #print 'Got connection from', addr
@@ -184,7 +205,7 @@ def main():
                     print('Server received', repr(data))
                     #extract the command from 'GET /api/commmand/value
                     command=re.findall('GET /api/(\S*)/',repr(data))
-        
+
                     if command!=None:
                         print command[0]
                         # Parse value
@@ -199,23 +220,23 @@ def main():
                                 # /api/fanspeed/1 germ
                                 # /api/fanspeed/0 off
                                 if status.getFanSpeed()!=value[0]:
-                
+
                                     if value[0] == 'turbo': #'turbo':
                                         sendBtCmd(perif, HFPProDelegate, binascii.unhexlify('a510009316000000000000000000000000000000'))
-                
+
                                     elif value[0] == 'allergen': #'allergen:
                                         sendBtCmd(perif, HFPProDelegate, binascii.unhexlify('a508009316000000000000000000000000000000'))
-                
+
                                     elif value[0] == 'general_on': #'general':
                                         sendBtCmd(perif, HFPProDelegate, binascii.unhexlify('a504009316000000000000000000000000000000'))
                                     elif value[0] == 'germ': #'germ':
                                         if status.getFanSpeed()=='off':
                                             sendBtCmd(perif, HFPProDelegate, binascii.unhexlify('a501009316000000000000000000000000000000'))
                                         else:
-                                            sendBtCmd(perif, HFPProDelegate, binascii.unhexlify('a502009316000000000000000000000000000000'))              
+                                            sendBtCmd(perif, HFPProDelegate, binascii.unhexlify('a502009316000000000000000000000000000000'))
                                     elif value[0] == 'off': #'off':
                                         sendBtCmd(perif, HFPProDelegate, binascii.unhexlify('a501009316000000000000000000000000000000'))
-                
+
                                     else:
                                         print "Malformed/unknown value"
                             elif command[0] ==  'light':
@@ -224,13 +245,13 @@ def main():
                                         # /api/light/off
                                 if value[0] =='on':
                                     sendBtCmd(perif, HFPProDelegate, binascii.unhexlify('a500049316000000000000000000000000000000'))
-                
+
                                 elif value[0] == 'medium':
                                     sendBtCmd(perif, HFPProDelegate, binascii.unhexlify('a500049316000000000000000000000000000000'))
-                
+
                                 elif value[0] == 'off':
                                     sendBtCmd(perif, HFPProDelegate, binascii.unhexlify('a500049316000000000000000000000000000000'))
-                
+
                                 else:
                                     print "Malformed/unknown value"
                             elif command[0] == 'timer':
@@ -238,10 +259,10 @@ def main():
                                 # /api/timer/minus
                                 if value[0] == 'plus':
                                     sendBtCmd(perif, HFPProDelegate, binascii.unhexlify('a500019316000000000000000000000000000000'))
-                
+
                                 elif value[0] == 'minus':
                                     sendBtCmd(perif, HFPProDelegate, binascii.unhexlify('a500029316000000000000000000000000000000'))
-                
+
                                 else:
                                     print "Malformed/unknown value"
                             elif command[0] == 'voc':
@@ -249,15 +270,15 @@ def main():
                                         # /api/voc/off
                                 if value[0] == 'on':
                                     sendBtCmd(perif, HFPProDelegate, binascii.unhexlify('a520009316000000000000000000000000000000'))
-                
+
                                 elif value[0] == 'off':
                                     sendBtCmd(perif, HFPProDelegate, binascii.unhexlify('a520009316000000000000000000000000000000'))
-                
+
                                 else:
                                     print "Malformed/unknown value"
                             elif command[0] == 'refresh':
                                  # do nothing and just resent the last status. Maybe notification(s) were received in-between to status got update despite the Smartthings side didn't get refreshed yet.
-                                 print "Refresh will be sent" 
+                                 print "Refresh will be sent"
                             else:
                                 print "Unkown command"
                         else:
@@ -285,8 +306,7 @@ def main():
                         break
                     except:
                         pass
-                            
+
 
 if __name__ == "__main__":
     main()
-
