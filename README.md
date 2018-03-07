@@ -16,6 +16,11 @@ Integration of Honeywell HPA250B into smartthings using Raspberry Pi and BluePi
 <li>Assign static IP address. Port 12345 will be used between Raspberry and SmartThings Hub.</li>
 </p>
 
+<li>Put in /home/pi the python script ssdp_server.py (this file uses wlan0 as interface. You can change the code to use eth0 or other)</li>
+<li>Create a folder "lib" in /home/pi</li>
+<li>Put in /home/pi/lib the 2 files ssdp.py and upnp_http_server.py.</li>
+<li>This is mandatory the 2 files are in a lib folder and the lib folder at the same location as ssdp_server.py </li>
+
 <p>Command line for py script on Raspberry Pi: <b>sudo python hpa250b_agent.py [mac address] [port] [inet] [hci port #] &</b>
 </p>
 <p> Example: sudo python hpa250b_agent.py fe:ed:fa:ce:da:ad 12345 wlan0 1 &
