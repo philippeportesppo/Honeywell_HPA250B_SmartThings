@@ -16,12 +16,13 @@
 import groovy.json.JsonSlurper 
  
 metadata {
-definition (name: "Honeywell_HPA250B", namespace: "philippeportesppo", author: "Philippe PORTES") 
+definition (name: "Honeywell_HPA250B", namespace: "philippeportesppo", author: "Philippe PORTES", ocfDeviceType: "oic.d.airpurifier", runLocally: false, minHubCoreVersion: '000.017.0012', executeCommandsLocally: false, vid:"generic-switch") 
 {
-    capability "actuator"
-    capability "Sensor"
-    capability "polling"
     capability "switch"
+    capability "actuator"
+    capability "sensor"
+    capability "polling"
+
     command "fan_germ"
     command "fan_general"
     command "fan_allergen"
@@ -34,16 +35,11 @@ definition (name: "Honeywell_HPA250B", namespace: "philippeportesppo", author: "
     command "voc_on"
     command "timer_minus"
     command "timer_plus"
+        
     attribute "argument", "enum", ["on", "auto", "medium", "off", "germ", "general_on", "allergen","turbo","updating","plus", "minus"]
     attribute "command", "enum", ["fan_speed", "light", "voc","timer"]
 }
-preferences {
-        section {
-            // input "internal_ip", "text", title: "Raspberry static IP", required: true
-            // input "internal_port", "text", title: "Raspberry port (12345)", required: true
-            }		
-        }
-    
+
 tiles (scale: 2) {
       
 standardTile("fan", "device.fan", width: 6, height: 4, canChangeIcon: false, canChangeBackground: false, decoration: "flat") {
@@ -95,7 +91,7 @@ standardTile("prefilter", "device.prefilter", width: 2, height: 2, canChangeIcon
 standardTile("epafilter", "device.epafilter", width: 2, height: 2, canChangeIcon: false, canChangeBackground: false, decoration: "flat") {
 	state ("default", label: 'EPA Filter: ${currentValue}%', backgroundColor:"#ffffff")
 }
-    main("fan")
+    main("switch")
     details(["fan","switch","light","voc","timer_minus","timer","timer_plus", "prefilter","epafilter" ])
     
 }
