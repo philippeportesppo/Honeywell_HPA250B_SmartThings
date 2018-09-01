@@ -35,22 +35,11 @@ definition (name: "Honeywell_HPA250B", namespace: "philippeportesppo", author: "
     command "voc_on"
     command "timer_minus"
     command "timer_plus"
-    
-    //command "enrollResponse"
-
-	//fingerprint manufacturer: "Honeywell", model: "HPA250B", deviceJoinName: "HPA250B"
-
-    
+        
     attribute "argument", "enum", ["on", "auto", "medium", "off", "germ", "general_on", "allergen","turbo","updating","plus", "minus"]
     attribute "command", "enum", ["fan_speed", "light", "voc","timer"]
 }
-/*preferences {
-        section {
-            // input "internal_ip", "text", title: "Raspberry static IP", required: true
-            // input "internal_port", "text", title: "Raspberry port (12345)", required: true
-            }		
-        }*/
-    
+
 tiles (scale: 2) {
       
 standardTile("fan", "device.fan", width: 6, height: 4, canChangeIcon: false, canChangeBackground: false, decoration: "flat") {
