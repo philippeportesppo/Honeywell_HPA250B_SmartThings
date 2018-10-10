@@ -35,3 +35,6 @@ Integration of Honeywell HPA250B into smartthings using Raspberry Pi and BluePi
 
 <h2> General architecture </h2>
 <img src=https://github.com/philippeportesppo/Honeywell_HPA250B_SmartThings/blob/master/HPA250B.png>
+
+Hope you like it!
+[![Support via PayPal](https://cdn.rawgit.com/twolfson/paypal-github-button/1.0.0/dist/button.svg)](https://www.paypal.me/philippeportesppo)
