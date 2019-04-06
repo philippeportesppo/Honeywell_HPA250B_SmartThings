@@ -24,6 +24,24 @@ import netifaces as ni
 from time import sleep
 from bluepy.btle import Scanner, DefaultDelegate, Peripheral, UUID, BTLEException
 
+import logging
+import logging.handlers
+
+LOG_FILENAME = 'logging_rotatingfile_example.out'
+
+# Set up a specific logger with our desired output level
+my_logger = logging.getLogger('MyLogger')
+
+formatter = logging.Formatter('%(asctime)-12s [%(levelname)s] %(message)s')
+
+my_logger.setLevel(logging.DEBUG)
+# Add the log message handler to the logger
+handler = logging.handlers.RotatingFileHandler(
+              LOG_FILENAME, maxBytes=5*1024*512, backupCount=5)
+handler.setFormatter(formatter)
+my_logger.addHandler(handler)
+
+
 def speedfan(x):
     return {
         '\x41' : 'turbo',
@@ -98,21 +116,21 @@ class HFPProDelegate(DefaultDelegate):
         self.prefilter=100
         self.epafilter=100
 
-        print "Delegate initialized"
+        my_logger.info("Delegate initialized")
         DefaultDelegate.__init__(self)
 
     def handleDiscovery(self, dev, isNewDev, isNewdata):
-        print "Advertiszing received #2 from:", dev.addr, " ours is:",self.adr
+        my_logger.debug("Advertiszing received #2 from: %s ours is: %s", dev.addr, self.adr)
         if dev.addr == self.adr:
-            print dev.getScanData()
+            my_logger.debug( dev.getScanData())
 
     def handleNotification(self, cHandle, data):
-        print "Notification received  from handle:", cHandle, " Data:",data
+        my_logger.debug("Notification received  from handle: %X Data: %s", cHandle,data)
         if cHandle==0x37:
             self.status.setFanSpeed(speedfan(data[1]))
         elif cHandle==0x2e:
-            print "Valid notification:"+binascii.hexlify(data)
-            print self.status.status()
+            my_logger.debug("Valid notification:%s",binascii.hexlify(data))
+            my_logger.debug( self.status.status())
             try:
                 if data[1] == '\x03':
                     self.status.setVoc('on')
@@ -133,18 +151,18 @@ class HFPProDelegate(DefaultDelegate):
                 if data[6] != '\x00':
                     self.status.setEPAFilter(int(binascii.hexlify(data[6]),16))
             except:
-                print "Unkown notification parameter"
+                my_logger.warning("Unkown notification parameter")
 
-            print self.status.status()
+            my_logger.debug(self.status.status())
 
 def sendBtCmd(perif, statushandler, string):
 
-    print "Sending command:"+string
+    my_logger.info( "Sending command:%s",string)
     perif.writeCharacteristic(0x25,string, withResponse=True)
     while True:
         if perif.waitForNotifications(1.0):
             break
-    print "Received notification after command"
+    my_logger.info( "Received notification after command")
 
 def get_network_interface_ip_address(interface='wlan0'):
 
@@ -161,7 +179,7 @@ def get_network_interface_ip_address(interface='wlan0'):
 
     while interface not in ni.interfaces():
 
-        print('Could not find interface %s.' % (interface,))
+        my_logger.error('Could not find interface %s.' % (interface,))
 
         sleep(10)
 
@@ -172,7 +190,7 @@ def get_network_interface_ip_address(interface='wlan0'):
 
         if (2 not in interfacestring) or (len(interfacestring[2]) == 0):
 
-            print('Could not find IP of interface %s. Sleeping.' % (interface,))
+            my_logger.warning('Could not find IP of interface %s. Sleeping.' % (interface,))
 
             sleep(10)
 
@@ -193,8 +211,8 @@ def main():
     #BT HCI 0 or 1
     iface = int(sys.argv[4])
 
-    print  "Will follow broadcasts from: ",bluetooth_adr, ". SmartThings DeviceHandler will have to be configured with IP:",host," and port: ",port
-    print  "hci used: ",iface
+    my_logger.info("Will follow broadcasts from: %s. SmartThings DeviceHandler will have to be configured with IP: %s and port: %s",bluetooth_adr,host,port)
+    my_logger.info("hci used: %s",iface)
 
     mac1,mac2,mac3,mac4,mac5,mac6=bluetooth_adr.split(':')
     status = HFPStatus()
@@ -206,7 +224,7 @@ def main():
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     s.settimeout(5.0)
 
-    print "Connecting",
+    my_logger.info("Connecting")
     while True:
         try:
             perif.connect(bluetooth_adr,iface=iface)
@@ -216,9 +234,9 @@ def main():
 
             break
         except BTLEException:
-            print ".",
-    print ""
-    print "Connected to ",bluetooth_adr
+            my_logger.info(".")
+
+    my_logger.info( "Connected to %s",bluetooth_adr)
 
     try:
         s.bind((host, port))            # Bind to the port
@@ -243,12 +261,12 @@ def main():
                     conn, addr = s.accept()     # Establish connection with client.
                     #print 'Got connection from', addr
                     data = conn.recv(1024)
-                    print('Server received', repr(data))
+                    my_logger.debug('Server received %s', repr(data))
                     #extract the command from 'GET /api/commmand/value
                     command=re.findall('GET /api/(\S*)/',repr(data))
 
                     if command!=None:
-                        print command[0]
+                        my_logger.debug(command[0])
                         # Parse value
                         value=re.findall('GET /api/'+command[0]+'/(\S*)', repr(data))
                         if value!=None:
@@ -279,7 +297,7 @@ def main():
                                         sendBtCmd(perif, HFPProDelegate, binascii.unhexlify('a501009316000000000000000000000000000000'))
 
                                     else:
-                                        print "Malformed/unknown value"
+                                        my_logger.error( "Malformed/unknown value")
                             elif command[0] ==  'light':
                                         # /api/ligth/on
                                         # /api/light/medium
@@ -294,7 +312,7 @@ def main():
                                     sendBtCmd(perif, HFPProDelegate, binascii.unhexlify('a500049316000000000000000000000000000000'))
 
                                 else:
-                                    print "Malformed/unknown value"
+                                    my_logger.error( "Malformed/unknown value")
                             elif command[0] == 'timer':
                                 # /api/timer/plus
                                 # /api/timer/minus
@@ -305,7 +323,7 @@ def main():
                                     sendBtCmd(perif, HFPProDelegate, binascii.unhexlify('a500029316000000000000000000000000000000'))
 
                                 else:
-                                    print "Malformed/unknown value"
+                                    my_logger.error("Malformed/unknown value")
                             elif command[0] == 'voc':
                                         # /api/voc/on
                                         # /api/voc/off
@@ -316,14 +334,14 @@ def main():
                                     sendBtCmd(perif, HFPProDelegate, binascii.unhexlify('a520009316000000000000000000000000000000'))
 
                                 else:
-                                    print "Malformed/unknown value"
+                                    my_logger.error( "Malformed/unknown value")
                             elif command[0] == 'refresh':
                                  # do nothing and just resent the last status. Maybe notification(s) were received in-between to status got update despite the Smartthings side didn't get refreshed yet.
-                                 print "Refresh will be sent"
+                                 my_logger.info("Refresh will be sent")
                             else:
-                                print "Unkown command"
+                                my_logger.error("Unkown command")
                         else:
-                            print "Malformed value"
+                            my_logger.error( "Malformed value")
                     #else:
                         #    print "Malformed command"
                     if conn != None:
@@ -334,16 +352,16 @@ def main():
                     perif.waitForNotifications(1.0)
                     pass
             except BTLEException as e:
-                print 'Error on line {}'.format(sys.exc_info()[-1].tb_lineno)
-                print e
+                my_logger.error( 'Error on line {%s}',format(sys.exc_info()[-1].tb_lineno))
+                my_logger.error( e)
                 while True:
                     try:
-                        print "Trying to reach again ",bluetooth_adr
+                        my_logger.info( "Trying to reach again %s",bluetooth_adr)
                         perif.connect(bluetooth_adr,iface=iface)
                         perif.writeCharacteristic(0x25,"\x4d\x41\x43\x2b"+binascii.unhexlify(mac1)+binascii.unhexlify(mac2)+binascii.unhexlify(mac3)+binascii.unhexlify(mac4)+binascii.unhexlify(mac5)+binascii.unhexlify(mac6))
                         perif.readCharacteristic(0x2e)
                         perif.writeCharacteristic(0x2F,b"\x01\x00", withResponse=True)
-                        print "Re-connected BT-LE target"
+                        my_logger.info( "Re-connected BT-LE target")
                         break
                     except:
                         pass
