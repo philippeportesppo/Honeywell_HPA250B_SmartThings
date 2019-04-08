@@ -27,7 +27,7 @@ from bluepy.btle import Scanner, DefaultDelegate, Peripheral, UUID, BTLEExceptio
 import logging
 import logging.handlers
 
-LOG_FILENAME = 'logging_rotatingfile_example.out'
+LOG_FILENAME = '/home/pi/logging_rotatingfile_example.out' #if pi user is used, adapt otherwise.
 
 # Set up a specific logger with our desired output level
 my_logger = logging.getLogger('MyLogger')
