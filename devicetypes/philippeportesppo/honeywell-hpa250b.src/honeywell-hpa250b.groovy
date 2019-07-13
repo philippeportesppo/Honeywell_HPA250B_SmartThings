@@ -53,6 +53,7 @@ standardTile("fan", "device.fan", width: 6, height: 4, canChangeIcon: false, can
  
 }
 
+
 standardTile("switch", "device.switch", width: 2, height: 2, canChangeIcon: false, canChangeBackground: false, decoration: "flat") {
     state ("off", label:'Off', action:"switch.on", icon:"https://raw.githubusercontent.com/philippeportesppo/Honeywell_HPA250B_SmartThings/master/images/HPA250.png", backgroundColor:"#ffffff")
     state ("on", label:'On', action:"switch.off", icon:"https://raw.githubusercontent.com/philippeportesppo/Honeywell_HPA250B_SmartThings/master/images/HPA250.png", backgroundColor:"#00a0dc")
@@ -91,8 +92,11 @@ standardTile("prefilter", "device.prefilter", width: 2, height: 2, canChangeIcon
 standardTile("epafilter", "device.epafilter", width: 2, height: 2, canChangeIcon: false, canChangeBackground: false, decoration: "flat") {
 	state ("default", label: 'EPA Filter: ${currentValue}%', backgroundColor:"#ffffff")
 }
+    standardTile("Status", "device.status", width: 6, height: 2) {
+ 		state "default", label:'${currentValue}'
+ 		}     
     main("switch")
-    details(["fan","switch","light","voc","timer_minus","timer","timer_plus", "prefilter","epafilter" ])
+    details(["fan","switch","light","voc","timer_minus","timer","timer_plus", "prefilter","epafilter","Status" ])
     
 }
 
@@ -297,6 +301,7 @@ def parse(description) {
     log.debug "light: ${result.hpa250b.light}"
 	log.debug "timer: ${result.hpa250b.timer}"
     
+    state.requestCounter = 0
     
     if (result.hpa250b.voc == "on")
         events << createEvent(name: "fan",     	value: "fan_auto", isStateChanged:true )
@@ -353,6 +358,16 @@ def refreshCmd() {
     log.debug "The device id configured is: $device.deviceNetworkId"
     def levelCommand = 0x00
 
+    if (state.requestCounter == 1)
+    {
+    	sendEvent(name:"status", value:"SmartThings is not receiving any data from HPA250B. Please check the Pi is running properly or restart it", display:true)
+        log.debug "SmartThings is not receiving any data from HPA250B. Please check the Pi is running properly or restart it"
+    }
+    else
+    {
+    	sendEvent(name:"status", value:"Connected to Pi and HPA250B", display:true)
+    }
+
     log.debug "The device id before update is: $device.deviceNetworkId"
     device.deviceNetworkId = "$host:$port" 
     
@@ -377,6 +392,8 @@ def refreshCmd() {
     }
     catch (Exception e) {
     	log.debug "Hit Exception $e on $hubAction"
+        sendEvent(name:"status", value:"HubAction to Pi failed!", display:true)
+        state.requestCounter = 0
     }
     
 }
