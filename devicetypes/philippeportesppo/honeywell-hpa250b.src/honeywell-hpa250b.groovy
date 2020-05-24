@@ -16,18 +16,15 @@
 import groovy.json.JsonSlurper 
  
 metadata {
-definition (name: "Honeywell_HPA250B", namespace: "philippeportesppo", author: "Philippe PORTES", ocfDeviceType: "oic.d.airpurifier", runLocally: false, minHubCoreVersion: '000.017.0012', executeCommandsLocally: false, vid:"generic-switch") 
+definition (name: "Honeywell_HPA250B", namespace: "philippeportesppo", author: "Philippe PORTES", mnmn:"SmartThings", vid:"generic-air-purifier",  ocfDeviceType:"oic.d.airpurifier" ) 
 {
     capability "switch"
     capability "actuator"
     capability "sensor"
     capability "polling"
-
-    command "fan_germ"
-    command "fan_general"
-    command "fan_allergen"
-    command "fan_turbo"
-    command "fan_off"
+    capability "fanSpeed"
+    capability "filterStatus"
+    
     command "light_off"
     command "light_medium"
     command "light_on"
@@ -42,15 +39,7 @@ definition (name: "Honeywell_HPA250B", namespace: "philippeportesppo", author: "
 
 tiles (scale: 2) {
       
-standardTile("fan", "device.fan", width: 6, height: 4, canChangeIcon: false, canChangeBackground: false, decoration: "flat") {
-    state ("fan_off", label:'Off' /*, action:"fan_germ"*/, icon:"https://raw.githubusercontent.com/philippeportesppo/Honeywell_HPA250B_SmartThings/master/images/HPA250.png", backgroundColor:"#ffffff")
-    state ("fan_germ", label:'Germ', action:"fan_general",  icon:"https://raw.githubusercontent.com/philippeportesppo/Honeywell_HPA250B_SmartThings/master/images/HPA250.png", backgroundColor:"#00a0dc")
-    state ("fan_general_on", label:'General Clean', action:"fan_allergen", icon:"https://raw.githubusercontent.com/philippeportesppo/Honeywell_HPA250B_SmartThings/master/images/HPA250.png", backgroundColor:"#00a0dc")
-    state ("fan_allergen", label:'Allergen', action:"fan_turbo", icon:"https://raw.githubusercontent.com/philippeportesppo/Honeywell_HPA250B_SmartThings/master/images/HPA250.png", backgroundColor:"#00a0dc")
-    state ("fan_turbo", label:'Turbo', action:"fan_germ",  icon:"https://raw.githubusercontent.com/philippeportesppo/Honeywell_HPA250B_SmartThings/master/images/HPA250.png", backgroundColor:"#00a0dc")
-    state ("fan_updating", label:'Sending...', backgroundColor:"#00a0dc")
-    state ("fan_auto", label:'Auto(VOC)',icon:"https://raw.githubusercontent.com/philippeportesppo/AirMentorPro2_SmartThings/master/images/TVOC-Icon.png", backgroundColor:"#00a0dc")
- 
+standardTile("fanSpeed", "device.fanSpeed", width: 6, height: 4, canChangeIcon: false, canChangeBackground: false, decoration: "flat") {
 }
 
 
@@ -86,8 +75,8 @@ standardTile("voc", "device.voc", width: 2, height: 2, canChangeIcon: false, can
     state ("voc_updating", label:'Sending...')
     state ("off", label:'')
 }
-standardTile("prefilter", "device.prefilter", width: 2, height: 2, canChangeIcon: false, canChangeBackground: false, decoration: "flat") {
-	state ("default", label: 'Pre-Filter: ${currentValue}%', backgroundColor:"#ffffff")
+standardTile("filterStatus", "device.filterStatus", width: 2, height: 2, canChangeIcon: false, canChangeBackground: false, decoration: "flat") {
+	state ("default", label: '${currentValue}', backgroundColor:"#ffffff")
 }
 standardTile("epafilter", "device.epafilter", width: 2, height: 2, canChangeIcon: false, canChangeBackground: false, decoration: "flat") {
 	state ("default", label: 'EPA Filter: ${currentValue}%', backgroundColor:"#ffffff")
@@ -96,7 +85,7 @@ standardTile("epafilter", "device.epafilter", width: 2, height: 2, canChangeIcon
  		state "default", label:'${currentValue}'
  		}     
     main("switch")
-    details(["fan","switch","light","voc","timer_minus","timer","timer_plus", "prefilter","epafilter","Status" ])
+    details(["fanSpeed","switch","light","voc","timer_minus","timer","timer_plus", "filterStatus","epafilter","Status" ])
     
 }
 
@@ -192,9 +181,9 @@ def fan_germ()
 {
 	log.debug "fan_germ"
 
-	sendEvent(name: "switch", value: "on")
+	sendEvent(name: "switch", value: "on", display: true)
 
-	sendEvent(name: "fan",      value: "fan_updating" )
+	sendEvent(name: "fanSpeed",      value: "1" , display: true)
 	sendEvent(name: "argument", value: 'germ', display: true)
     sendEvent(name: "command",  value: 'fanspeed', display: true)
 
@@ -205,9 +194,9 @@ def fan_general()
 {
 	log.debug "fan_general"
 
-	sendEvent(name: "switch", value: "on")
+	sendEvent(name: "switch", value: "on", display: true)
 
-	sendEvent(name: "fan",      value: "fan_updating" )
+	sendEvent(name: "fanSpeed",      value: "2" , display: true)
 	sendEvent(name: "argument", value: 'general_on', display: true)
     sendEvent(name: "command", value: 'fanspeed', display: true)
 	  
@@ -218,9 +207,9 @@ def fan_allergen()
 {
 	log.debug "fan_allergen"
 
-	sendEvent(name: "switch", value: "on")
+	sendEvent(name: "switch", value: "on", display: true)
 
-	sendEvent(name: "fan",      value: "fan_updating" )
+	sendEvent(name: "fanSpeed",      value: "3", display: true )
 	sendEvent(name: "argument", value: 'allergen', display: true)
     sendEvent(name: "command", value: 'fanspeed', display: true)
 	    
@@ -231,9 +220,9 @@ def fan_turbo()
 {
 	log.debug "fan_turbo"
 
-	sendEvent(name: "switch", value: "on")
+	sendEvent(name: "switch", value: "on", display: true)
 
-	sendEvent(name: "fan",      value: "fan_updating" )
+	sendEvent(name: "fanSpeed",      value: "4" , display: true)
 	sendEvent(name: "argument", value: 'turbo', display: true)
     sendEvent(name: "command", value: 'fanspeed', display: true)
    
@@ -244,13 +233,34 @@ def fan_off()
 {
 	log.debug "fan_off"
 
-	sendEvent(name: "switch", value: "off")
+	sendEvent(name: "switch", value: "off", display: true)
+	sendEvent(name: "fanSpeed", value: "0", display: true)
 
-	sendEvent(name: "fan",      value: "fan_updating" )
 	sendEvent(name: "argument", value: 'off', display: true)
     sendEvent(name: "command", value: 'fanspeed', display: true)
    
     refreshCmd()
+}
+
+def setFanSpeed(speed)
+{
+	switch (speed) {
+    case "0":
+    	fan_off()
+    	break;
+    case "1":
+    	fan_germ()
+    	break
+	case "2":
+    	fan_general()
+    	break
+    case "3":
+    	fan_allergen()
+    	break;
+    case "4":
+		fan_turbo()
+    	break;
+    }
 }
 
 def refresh_status()
@@ -307,6 +317,25 @@ def parse(description) {
         events << createEvent(name: "fan",     	value: "fan_auto", isStateChanged:true )
     else
     	events << createEvent(name: "fan",     	value: "fan_${result.hpa250b.fanSpeed}", isStateChanged:true )
+    def fanValue = "0"    
+    switch (result.hpa250b.fanSpeed) {
+        case "germ":
+    	fanValue = "1"    
+        break;
+        case "general_on":
+    	fanValue = "2"    
+        break
+        case "allergen":
+    	fanValue = "3"    
+        break
+
+        case "turbo":
+    	fanValue = "4"    
+        break;
+    }
+    
+    events << createEvent(name: "fanSpeed", value: fanValue, display: true)
+
     if (result.hpa250b.fanSpeed == "off") {
     	events << createEvent(name: "light",    value: "off", isStateChanged:true)  
         events << createEvent(name: "voc", 	    value: "off", isStateChanged:true)
@@ -320,8 +349,15 @@ def parse(description) {
         events << createEvent(name: "voc",     		value: "voc_${result.hpa250b.voc}_${result.hpa250b.vociaq}", isStateChanged:true)
         }
     events << createEvent(name: "timer",     		value: "${result.hpa250b.timer}", isStateChanged:true)   
-    events << createEvent(name: "prefilter",     	value: "${result.hpa250b.prefilter}", isStateChanged:true)   
-    events << createEvent(name: "epafilter",     	value: "${result.hpa250b.epafilter}", isStateChanged:true)   
+    if (result.hpa250b.prefilter.toInteger()<10) {
+    	events << createEvent(name: "filterStatus",     	value: "replace", isStateChanged:true,, display: true)   
+    	}
+    else
+    	{
+     		events << createEvent(name: "filterStatus",     	value: "normal", isStateChanged:true,, display: true)   
+       
+        }
+    //events << createEvent(name: "epafilter",     	value: "${result.hpa250b.epafilter}", isStateChanged:true)   
 
     return events
 }
